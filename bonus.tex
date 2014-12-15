@@ -1,0 +1,102 @@
+\section{Impression}
+    \setlength{\parindent}{25pt}
+    First, we modify the `pte` to read-only permission after calling "pte\_wrprotect(*pte)" and we are sure that  the value has changed. 
+    In fact, if we assign a value to not only the `ptr` that is set only-read permission but other variables in c code, 
+    the pte's permission resumes after doing that. So we add "ptep\_set\_wrprotect(mm, PtrToUlong((void *)ptr), \&pte)" to our code. 
+    The pte doesn't resume anymore. However, we execute "ptr[0]='w'", the result is still the same.\\
+
+    Therefore we introduce it has an mechanism in Linux kernel to avoid pte fault and 
+    find an approach named "copy on write" after tracing those functions "handle\_mm\_fault, handle\_pte\_fault, do\_page\_fault". 
+    We think we change the page's protection and rewrite the vm\_flags will let cow not to happen. 
+    After doing that, we still not get the error message,"segmentation fault" on kernel 3.14.25. 
+    Maybe we miss something else so we will continue to find the solution.
+\section{Test first}
+  \begin{minted}[mathescape,
+               numbersep=5pt,
+               gobble=2,
+               frame=lines,
+               framesep=2mm]{s}
+               
+   typedef unsigned long ULONG;
+   typedef unsigned long* ULONG_PTR;
+   #define PtrToUlong( p ) ((ULONG)(ULONG_PTR) (p) )
+               
+  SYSCALL_DEFINE2(nonwritable, char *, ptr, char *, ptr_mod)
+  { 
+      pgd_t *pgd;
+      pud_t *pud;
+      pmd_t *pmd;
+      pte_t *pte;
+  
+      struct mm_struct *mm = current->mm;
+      printk("from %s\n",ptr);
+      printk("from %c\n",*ptr);
+      printk("from 0x%lx~0x%lx\n",mm->mmap->vm_start,mm->mmap->vm_end);
+      printk("from %lx\n",PtrToUlong((void *)ptr));
+  
+      pgd = pgd_offset(mm, PtrToUlong((void *)ptr));
+      pud = pud_offset(pgd, PtrToUlong((void *)ptr));
+      pmd = pmd_offset(pud, PtrToUlong((void *)ptr));
+      pte = pte_offset_map(pmd, PtrToUlong((void *)ptr));
+  
+      if(pte_write(*pte))
+          printk(KERN_INFO "pte still writable!!\n");
+  
+      printk(KERN_INFO "before bit: %lx\n",pte_val(*pte));
+  
+      set_pte_atomic(pte, __pte(pte_val(pte_wrprotect(*pte))));
+  
+      printk(KERN_INFO "after bit: %lx\n",pte_val(*pte));
+  
+      //flush_cache_mm(mm);
+      //flush_tlb_mm(mm);
+  
+      set_pte_atomic(pte, pte_wrprotect(*pte));
+      //set_pte_atomic(pte, __pte(pte_val(pte_wrprotect(*pte))));
+  
+      pgd = pgd_offset(mm, PtrToUlong((void *)ptr));
+      pud = pud_offset(pgd, PtrToUlong((void *)ptr));
+      pmd = pmd_offset(pud, PtrToUlong((void *)ptr));
+      pte = pte_offset_map(pmd, PtrToUlong((void *)ptr));
+  
+      printk(KERN_INFO "flush bit: %lx\n",pte_val(*pte));
+  
+  
+  
+      ptep_set_wrprotect(mm, PtrToUlong((void *)ptr), &pte);
+  
+  
+      return 1;
+  }
+  \end{minted}
+  
+  
+\section{Test Second}
+
+	After click more href. on Google... Linux kernel have a mechanism call copy-on-write when pte zero or fault.   \\
+	
+	handle\_mm\_fault -> handle\_pte\_fault \\
+	-> \_do\_page\_fault -> (flags \& FAULT\_FLAG\_WRITE)
+
+	  \begin{minted}[mathescape,
+	               numbersep=5pt,
+	               gobble=2,
+	               frame=lines,
+	               framesep=2mm]{s}	
+  struct mm_struct *mm = current->mm;
+  struct vm_area_struct *vma = mm->mmap;
+
+  unsigned long ori_vm_flags, mod_vm_flags, vm_type;
+  pgprot_t protect;
+  vm_type = 0xF;
+
+  ori_vm_flags = ori_vm_flags & ~(VM_WRITE);
+  //mod_vm_flags = mod_vm_flags | ori_vm_flags;
+  mod_vm_flags = ori_vm_flags;
+
+  protect = protection_map[vm_type & mod_vm_flags];
+
+
+  vma->vm_page_prot = protect;
+  vma->vm_flags = mod_vm_flags;
+	  \end{minted}

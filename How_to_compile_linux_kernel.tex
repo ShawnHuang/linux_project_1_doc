@@ -1,0 +1,31 @@
+  \begin{minted}[mathescape,
+               linenos,
+               numbersep=5pt,
+               gobble=2,
+               frame=lines,
+               framesep=2mm]{bash}
+  #!/bin/sh
+
+  mkdir kernel
+  cd kernel
+
+  wget http://www.kernel.org/pub/linux/kernel/v3.0/linux-3.2.17.tar.bz2
+
+  tar xvf linux-3.2.17.tar.bz2
+
+  cd linux-3.2.17
+
+  cp -vi /boot/config-`uname -r` .config
+
+  # prepare toolchain
+  sudo apt-get install git-core libncurses5 libncurses5-dev\
+  libelf-dev asciidoc binutils-dev linux-source qt3-dev-tools\ 
+  libqt3-mt-dev libncurses5 libncurses5-dev fakeroot build-essential\ 
+  crash kexec-tools makedumpfile kernel-wedge kernel-package
+
+  # compile
+  make -j8 KDEB_PKGVERSION=1.user deb-pkg
+
+  # install kernel
+  sudo dpkg -i ../linux*.deb
+  \end{minted}

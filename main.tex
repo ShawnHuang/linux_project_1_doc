@@ -1,0 +1,71 @@
+\documentclass[a4paper,12pt]{report}
+%\usepackage[a4paper,paperheight=29.https://www.writelatex.com/1949581nmtgxg#7cm,paperwidth=21cm,left=2.0cm,right=2cm,top=2cm,bottom=2cm,footskip=1.5cm]{geometry}
+\usepackage{pstricks}		   % for writeLatex choose xelatex automaticaly
+\usepackage{graphicx}		  % image
+\usepackage{xeCJK}				% chinese
+\usepackage{verbatim} 		 % ascii block
+\usepackage{listings} 			% code highlight
+\usepackage{minted} 		  % code highlight
+\usepackage{graphvizzz}
+\setmainfont{Droid Sans}
+\setCJKmainfont{AR PL UKai TW}
+\setCJKmonofont{AR PL UKai TW}
+
+\title{ Linux Operation System: Project 1}
+
+\begin{document}
+\begin{titlepage}
+    \centering
+    \vfill
+    \vfill
+
+    \centering{\Huge Linux Operation System: Project 1}\\
+    \vfill
+    \vfill
+    \begin{verbatim}
+         -------------------------------------
+        / Group#28                            \
+        \ Members: 歐軒慈　凌于翔　黃南雄     /
+         -------------------------------------
+                   \
+                    \
+                      .--.           .--.           .--.
+                     |o_o |         |o_o |         |o_o |
+                     |:_/ |         |:_/ |         |:_/ |
+                    //   \ \       //   \ \       //   \ \
+                   (|     | )     (|     | )     (|     | )
+                  /'\_   _/`\    /'\_   _/`\    /'\_   _/`\
+                  \___)=(___/    \___)=(___/    \___)=(___/
+
+     \end{verbatim}
+    \vfill
+    \vfill
+\end{titlepage}
+
+%\begin{tableofcontents}
+\tableofcontents
+%\end{tableofcontents}
+
+
+\chapter{Our environment}
+	\input{'Our_env.tex'}
+    
+\chapter{How to compile linux kernel}
+ 	\input{'How_to_compile_linux_kernel'}
+
+\chapter{Add a new system call in Linux kernel}
+ 	\input{'Add_syscall.tex'}
+    
+\chapter{Find the process according to the pid parameter}
+ 	\input{'Find_with_pid.tex'}
+  
+\chapter{Dump the process virtual address space areas}
+	\input{'Dump_va.tex'}
+  
+\chapter{Dump the physical frame addresses that the process is using}
+	\input{'Dump_pfa.tex'}
+  
+\chapter{Optional Bonus Point}
+  \input{'bonus.tex'}
+  %\includegraphics[scale=0.5]{figure01.jpg}
+\end{document}

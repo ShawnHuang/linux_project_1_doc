@@ -1,0 +1,11 @@
+  \includegraphics[scale=0.8]{pic/vm_organize.png}
+  
+  \section{Use the members in the descriptor and display with hex}
+  \begin{minted}[mathescape,
+               numbersep=5pt,
+               gobble=2,
+               frame=lines,
+               framesep=2mm]{c}
+  printk(KERN_INFO "vm_start: %08lx\n",task->mm->mmap->vm_start);
+  printk(KERN_INFO "vm_end: %08lx\n",task->mm->mmap->vm_end);
+  \end{minted}

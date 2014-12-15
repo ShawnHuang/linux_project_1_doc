@@ -1,0 +1,24 @@
+	\includegraphics[scale=0.6]{pic/pg_layout.jpg}
+
+
+  \section{Get process descriptor with pid}
+  \begin{minted}[mathescape,
+               numbersep=5pt,
+               gobble=2,
+               frame=lines,
+               framesep=2mm]{c}
+  struct task_struct *task; /* the process descriptor */
+  task = pid_task(find_vpid(pid), PIDTYPE_PID);
+  \end{minted}
+  
+  \includegraphics[scale=0.5]{pic/process-vm.jpg}
+  
+  \section{Find process name with a member in descriptor}
+  \begin{minted}[mathescape,
+               numbersep=5pt,
+               gobble=2,
+               frame=lines,
+               framesep=2mm]{c}
+  printk(KERN_INFO "process name: %s\n",task->comm);
+  //task->comm is the executable name excluding path.
+  \end{minted}
